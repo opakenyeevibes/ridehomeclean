@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-background: #EEEEEE;
+  --color-brand-primary: #1F6F5F;
+  --color-brand-secondary: #2FA084;
+  --color-brand-fresh: #6FCF97;
+  --color-accent-cream: #FFF6DE;
+  --color-accent-aqua: #8BDFDD;
+  --color-accent-coral: #F48F68;
+  --color-accent-yellow: #FFE394;
+  --color-brand-card: #FFFFFF;
+  --color-brand-text: #16332E;
+  --color-brand-muted: #98A2B3;
+  --color-brand-border: #D8DEDA;
+  --color-brand-soft: #EAFBF3;
+}
+
+:root {
+  --brand-background: #EEEEEE;
+  --brand-primary: #1F6F5F;
+  --brand-secondary: #2FA084;
+  --brand-fresh: #6FCF97;
+  --accent-cream: #FFF6DE;
+  --accent-aqua: #8BDFDD;
+  --accent-coral: #F48F68;
+  --accent-yellow: #FFE394;
+  --brand-accent: #6FCF97;
+  --brand-card: #FFFFFF;
+  --brand-text: #16332E;
+  --brand-muted: #98A2B3;
+  --brand-border: #D8DEDA;
+  --brand-soft: #EAFBF3;
+  --ink: var(--brand-text);
+  --muted: #667085;
+  --line: var(--brand-border);
+  --brand: var(--brand-primary);
+  --lime: var(--brand-fresh);
+  --paper: var(--brand-background);
+  --coral: var(--accent-coral);
+  --shadow-sm: 0 3px 12px rgba(31,111,95,.055);
+  --shadow-md: 0 12px 36px rgba(31,111,95,.085);
+  --shadow-lg: 0 22px 60px rgba(31,111,95,.13);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; color: var(--ink); background: radial-gradient(circle at 50% -20%, #ffffff 0, #F7F8F7 30%, var(--paper) 62%); font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid rgba(111,207,151,.9); outline-offset: 2px; }
+::selection { background: var(--lime); color: var(--brand); }
+.hide-scrollbar { scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.card { background: rgba(255,255,255,.97); border: 1px solid var(--brand-border); border-radius: 24px; box-shadow: var(--shadow-sm); transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease; }
+.card:hover { border-color: rgba(31,111,95,.28); box-shadow: var(--shadow-md); }
+.pressable { transition: transform .18s ease, box-shadow .22s ease, background-color .22s ease, border-color .22s ease; }
+.pressable:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.pressable:active { transform: scale(.975); transition-duration: .08s; }
+.soft-grid { background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px); background-size: 16px 16px; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.animate-in { animation: fadeUp .4s ease both; }
+@keyframes stepIn { from { opacity: 0; transform: translateX(8px) } to { opacity: 1; transform: translateX(0) } }
+.booking-panel { animation: stepIn .28s cubic-bezier(.22,1,.36,1) both; }
+@keyframes statusPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(55,104,199,.18) } 50% { box-shadow: 0 0 0 5px rgba(55,104,199,0) } }
+.status-live { animation: statusPulse 2s ease-in-out infinite; }
+
+@media (hover: none) {
+  .card:hover { transform: none; box-shadow: var(--shadow-sm); }
+  .pressable:hover { transform: none; box-shadow: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+@media (max-width: 767px) {
+  body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
+  .card { border-radius: 22px; }
+}

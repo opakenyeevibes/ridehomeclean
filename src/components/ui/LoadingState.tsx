@@ -1,0 +1,1 @@
+export function LoadingState() { return <div className="space-y-3 animate-pulse"><div className="h-40 rounded-3xl bg-slate-200"/><div className="h-24 rounded-3xl bg-slate-200"/><div className="h-24 rounded-3xl bg-slate-200"/></div>; }

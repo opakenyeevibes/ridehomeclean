@@ -1,0 +1,39 @@
+{
+  "name": "ride-n-care",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:network": "next dev -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.0",
+    "@tailwindcss/postcss": "latest",
+    "bcryptjs": "latest",
+    "lucide-react": "latest",
+    "next": "16.2.9",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwindcss": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "prisma": "6.19.0",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "16.2.9",
+    "tsx": "latest",
+    "typescript": "latest"
+  }
+}
