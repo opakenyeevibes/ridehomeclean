@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -24,7 +24,9 @@ const serviceSeed = [
   ["custom", "Custom", "Premium Care", "sliders", 50000, "Sesuai kebutuhan", "Ceritakan kebutuhan khususmu dan tim Ride N Care akan membantu menyusun ruang lingkup layanan yang paling sesuai."],
 ] as const;
 
-async function upsertUser({ email, role, name, phone }: { email: string; role: UserRole; name: string; phone: string }) {
+type SeedUserRole = "admin" | "customer" | "worker";
+
+async function upsertUser({ email, role, name, phone }: { email: string; role: SeedUserRole; name: string; phone: string }) {
   const passwordHash = await bcrypt.hash(role === "admin" ? "Admin12345!" : "Password123!", 12);
   return prisma.user.upsert({
     where: { email },
