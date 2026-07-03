@@ -1,8 +1,8 @@
-# Ride N Care
+# Ride Home Care
 
-Platform layanan care panggilan berbahasa Indonesia. Ride N Care menghadirkan home care, outdoor care, auto care, office care, dan premium care langsung ke lokasi pelanggan.
+Platform layanan care panggilan berbahasa Indonesia. Ride Home Care menghadirkan home care, outdoor care, auto care, office care, dan premium care langsung ke lokasi pelanggan.
 
-Tagline: **Care datang ke lokasi kamu.**
+Tagline: **Home care datang ke lokasi kamu.**
 
 ## Menjalankan lokal
 
@@ -34,7 +34,7 @@ Production foundation sudah tersedia melalui MySQL + Prisma:
 Default admin dari seed:
 
 ```text
-email: admin@ridencare.local
+email: admin@ridehomecare.local
 password: Admin12345!
 ```
 
@@ -159,14 +159,14 @@ Format yang didukung:
 - PNG/JPG/JPEG/WEBP maksimal 5 MB.
 - SVG maksimal 2 MB dengan validasi sederhana untuk menolak script berbahaya.
 
-## Deploying Ride N Care to Hostinger Business with MySQL
+## Deploying Ride Home Care to Hostinger Business with MySQL
 
 1. Buat database MySQL di Hostinger hPanel.
 2. Salin database host, database name, username, dan password.
 3. Tambahkan environment variables di Hostinger Node.js app:
 
 ```env
-NEXT_PUBLIC_APP_NAME="Ride N Care"
+NEXT_PUBLIC_APP_NAME="Ride Home Care"
 NEXT_PUBLIC_APP_URL="https://yourdomain.com"
 DATABASE_URL="mysql://DB_USER:DB_PASSWORD@DB_HOST:3306/DB_NAME"
 UPLOAD_DIR="public/uploads"

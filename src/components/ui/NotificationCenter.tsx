@@ -9,7 +9,7 @@ type NotificationRole = "customer" | "admin";
 const notifications = {
   customer: [
     { title: "Promo FIRST CARE aktif", body: "Diskon 25% bisa dipakai untuk layanan pertama kamu.", time: "Baru saja", tone: "promo" },
-    { title: "Partner siap membantu", body: "10 layanan Ride N Care tersedia di area kamu hari ini.", time: "5 menit", tone: "success" },
+    { title: "Partner siap membantu", body: "10 layanan Ride Home Care tersedia di area kamu hari ini.", time: "5 menit", tone: "success" },
     { title: "Reminder jadwal", body: "Pesanan aktif akan tampil otomatis di halaman Pesanan.", time: "Hari ini", tone: "neutral" },
   ],
   admin: [
@@ -46,7 +46,7 @@ export function NotificationCenter({ role = "customer" }: { role?: NotificationR
     setPermissionState(result);
 
     if (result === "granted") {
-      new Notification("Ride N Care", {
+      new Notification("Ride Home Care", {
         body: role === "admin" ? "Notifikasi operasional sudah aktif." : "Notifikasi layanan kamu sudah aktif.",
       });
     }

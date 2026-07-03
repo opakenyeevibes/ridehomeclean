@@ -5,23 +5,11 @@ import { services as defaultServices } from "@/data/services";
 import { promos as defaultPromos } from "@/data/promos";
 import { paymentMethods as defaultPaymentMethods } from "@/data/payment-methods";
 import { categoryStyles, type CategoryStyleKey } from "@/lib/categoryStyles";
+import { defaultManagedServices } from "@/lib/defaultManagedServices";
 
 export const serviceStorageKey = "ride-n-care-services";
 export const promoStorageKey = "ride-n-care-promos";
 export const paymentMethodStorageKey = "ride-n-care-payment-methods";
-
-const serviceStyleById: Record<string, CategoryStyleKey> = {
-  "home-cleaning": "home",
-  "room-cleaning": "room",
-  bathroom: "bathroom",
-  garden: "outdoor",
-  "car-wash": "car",
-  "bike-wash": "motor",
-  "deep-clean": "deepClean",
-  office: "office",
-  premium: "premium",
-  custom: "custom",
-};
 
 const safeParse = <T>(value: string | null, fallback: T): T => {
   if (!value) return fallback;
@@ -31,24 +19,6 @@ const safeParse = <T>(value: string | null, fallback: T): T => {
     return fallback;
   }
 };
-
-export const defaultManagedServices: ManagedService[] = defaultServices.map((service, index) => ({
-  id: service.id,
-  name: service.name,
-  shortName: service.shortName,
-  category: service.category,
-  description: service.description,
-  tagline: service.tagline,
-  rating: service.rating,
-  totalReviews: service.totalReviews,
-  startingPrice: service.startingPrice,
-  duration: service.duration,
-  packages: service.packages,
-  addOns: service.addOns,
-  active: service.active ?? true,
-  sortOrder: index + 1,
-  styleKey: serviceStyleById[service.id] ?? "custom",
-}));
 
 export const managedToService = (item: ManagedService): Service => {
   const style = categoryStyles[(item.styleKey as CategoryStyleKey) || "custom"] ?? categoryStyles.custom;

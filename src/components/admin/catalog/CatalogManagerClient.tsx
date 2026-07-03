@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Clock3, Copy, EyeOff, Pencil, Plus, Save, Star, Trash2, X } from "lucide-react";
 import type { AddOn, ManagedService, Package } from "@/types";
 import { categoryStyles } from "@/lib/categoryStyles";
-import { defaultManagedServices, managedToService, readManagedServices, saveManagedServices, serviceStorageKey } from "@/lib/localData";
+import { managedToService, readManagedServices, saveManagedServices, serviceStorageKey } from "@/lib/localData";
+import { defaultManagedServices } from "@/lib/defaultManagedServices";
 import { cn, formatPrice } from "@/lib/utils";
 
 const inputClass = "h-11 w-full rounded-2xl border border-[#D8DEDA] bg-white px-3 text-sm outline-none transition focus:border-[#2FA084] focus:ring-2 focus:ring-[#6FCF97]/35";
@@ -54,13 +55,26 @@ export function CatalogManagerClient({ mode = "services" }: { mode?: "services" 
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setItems(readManagedServices()), 0);
+    const timer = window.setTimeout(() => {
+      const localItems = readManagedServices();
+      setItems(localItems);
+      fetch("/api/prototype/services", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: localItems }),
+      }).catch(() => null);
+    }, 0);
     return () => window.clearTimeout(timer);
   }, []);
 
   const persist = (next: ManagedService[]) => {
     setItems(next);
     saveManagedServices(next);
+    fetch("/api/prototype/services", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: next }),
+    }).catch(() => null);
   };
 
   const filtered = useMemo(() => {
@@ -92,8 +106,14 @@ export function CatalogManagerClient({ mode = "services" }: { mode?: "services" 
     if (window.confirm("Reset semua layanan dan paket ke data awal?")) {
       window.localStorage.removeItem(serviceStorageKey);
       setItems(defaultManagedServices);
+      fetch("/api/prototype/services", { method: "DELETE" }).catch(() => null);
       window.dispatchEvent(new Event("ride-n-care-services-updated"));
     }
+  };
+
+  const syncCustomer = () => {
+    persist(items);
+    window.alert("Data layanan sudah disinkronkan ke customer app lokal.");
   };
 
   return <div className="space-y-5">
@@ -103,6 +123,7 @@ export function CatalogManagerClient({ mode = "services" }: { mode?: "services" 
         <p className="mt-1 text-xs text-[#667085]">Perubahan tersimpan lokal dan dipakai di homepage, katalog, detail layanan, dan booking flow.</p>
       </div>
       <div className="flex flex-wrap gap-2">
+        <button onClick={syncCustomer} className="h-11 rounded-xl border border-[#6FCF97] bg-[#E6F6EF] px-4 text-xs font-black text-[#1F6F5F]">Sync customer</button>
         <button onClick={reset} className="h-11 rounded-xl border border-[#D8DEDA] bg-white px-4 text-xs font-black text-[#667085]">Reset</button>
         <button onClick={() => setEditing(newService(items.length))} className="flex h-11 items-center gap-2 rounded-xl bg-[#1F6F5F] px-4 text-xs font-black text-white"><Plus size={16}/>Tambah layanan</button>
       </div>

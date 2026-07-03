@@ -9,5 +9,5 @@ const modules = [
 ];
 
 export default function AdminContentPage() {
-  return <AdminShell title="Content Management" desc="Kelola konten yang tampil di aplikasi customer Ride N Care."><div className="grid gap-4 md:grid-cols-3">{modules.map(({href,title,desc,icon:Icon,tone})=><Link href={href} key={title} className="card p-5 transition hover:-translate-y-0.5 hover:shadow-md"><span className="grid size-12 place-items-center rounded-2xl text-[#1F6F5F]" style={{background:tone}}><Icon size={21}/></span><h2 className="mt-5 text-lg font-black">{title}</h2><p className="mt-2 text-sm leading-6 text-[#667085]">{desc}</p></Link>)}</div></AdminShell>;
+  return <AdminShell title="Content Management" desc="Kelola konten yang tampil di aplikasi customer Ride Home Care."><div className="grid gap-4 md:grid-cols-3">{modules.map(({href,title,desc,icon:Icon,tone})=><Link href={href} key={title} className="card p-5 transition hover:-translate-y-0.5 hover:shadow-md"><span className="grid size-12 place-items-center rounded-2xl text-[#1F6F5F]" style={{background:tone}}><Icon size={21}/></span><h2 className="mt-5 text-lg font-black">{title}</h2><p className="mt-2 text-sm leading-6 text-[#667085]">{desc}</p></Link>)}</div></AdminShell>;
 }

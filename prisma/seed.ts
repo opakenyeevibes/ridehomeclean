@@ -12,16 +12,16 @@ const packageTemplates = [
 ];
 
 const serviceSeed = [
-  ["home-cleaning", "Home Care", "Home Care", "house", 75000, "2–3 jam", "Layanan bersih rumah panggilan dari Ride N Care. Partner datang ke lokasi kamu untuk membantu rumah terasa lebih rapi, bersih, dan nyaman."],
+  ["home-cleaning", "Home Care", "Home Care", "house", 75000, "2–3 jam", "Layanan bersih rumah panggilan dari Ride Home Care. Partner datang ke lokasi kamu untuk membantu rumah terasa lebih rapi, bersih, dan nyaman."],
   ["room-cleaning", "Kamar", "Home Care", "bed", 45000, "1–2 jam", "Perawatan kamar panggilan untuk membantu membersihkan debu, merapikan area tidur, dan membuat kamar terasa lebih nyaman."],
   ["bathroom", "Kamar Mandi", "Home Care", "bath", 55000, "1–2 jam", "Perawatan kamar mandi untuk membersihkan kerak ringan, lantai, dinding, dan area sanitasi agar kembali segar dan nyaman digunakan."],
   ["garden", "Outdoor", "Outdoor Care", "leaf", 85000, "2–3 jam", "Layanan bersih area luar rumah seperti halaman, teras, taman kecil, dan area sekitar rumah."],
-  ["car-wash", "Auto Care", "Auto Care", "car", 65000, "60–90 mnt", "Layanan perawatan kendaraan panggilan. Partner Ride N Care datang ke lokasi kamu untuk membersihkan mobil atau motor sesuai paket yang dipilih."],
+  ["car-wash", "Auto Care", "Auto Care", "car", 65000, "60–90 mnt", "Layanan perawatan kendaraan panggilan. Partner Ride Home Home care datang ke lokasi kamu untuk membersihkan mobil atau motor sesuai paket yang dipilih."],
   ["bike-wash", "Motor Care", "Auto Care", "bike", 30000, "45 mnt", "Layanan perawatan motor ringan di lokasi kamu, mulai dari pencucian bodi hingga perapian area kendaraan."],
   ["deep-clean", "Deep Clean", "Premium Care", "sparkles", 225000, "4–6 jam", "Perawatan mendalam untuk rumah atau ruang yang membutuhkan penanganan detail, termasuk sudut dan noda yang jarang tersentuh."],
   ["office", "Office Care", "Office Care", "building", 275000, "4–6 jam", "Layanan care untuk kantor, toko, studio, atau ruang usaha kecil agar tetap rapi, bersih, dan nyaman digunakan."],
   ["premium", "Premium", "Premium Care", "crown", 350000, "6–8 jam", "Layanan prioritas untuk kebutuhan deep cleaning, request khusus, dan jadwal fleksibel."],
-  ["custom", "Custom", "Premium Care", "sliders", 50000, "Sesuai kebutuhan", "Ceritakan kebutuhan khususmu dan tim Ride N Care akan membantu menyusun ruang lingkup layanan yang paling sesuai."],
+  ["custom", "Custom", "Premium Care", "sliders", 50000, "Sesuai kebutuhan", "Ceritakan kebutuhan khususmu dan tim Ride Home Care akan membantu menyusun ruang lingkup layanan yang paling sesuai."],
 ] as const;
 
 type SeedUserRole = "admin" | "customer" | "worker";
@@ -36,7 +36,7 @@ async function upsertUser({ email, role, name, phone }: { email: string; role: S
 }
 
 async function main() {
-  const admin = await upsertUser({ email: "admin@ridencare.local", role: "admin", name: "Admin Ride N Care", phone: "081234567892" });
+  const admin = await upsertUser({ email: "admin@ridehomecare.local", role: "admin", name: "Admin Ride Home Care", phone: "081234567892" });
   const customerA = await upsertUser({ email: "alya@example.com", role: "customer", name: "Alya Putri", phone: "081234567890" });
   const customerB = await upsertUser({ email: "raka@example.com", role: "customer", name: "Raka Pratama", phone: "081298765432" });
 
@@ -124,18 +124,18 @@ async function main() {
   await prisma.promo.upsert({
     where: { code: "CARE25" },
     update: {},
-    create: { code: "CARE25", title: "Care datang langsung ke lokasi kamu", description: "Diskon 25% untuk layanan pertama.", discountType: "percentage", discountValue: 25, maxDiscount: 50000, minOrder: 50000, isActive: true },
+    create: { code: "CARE25", title: "Home care datang langsung ke lokasi kamu", description: "Diskon 25% untuk layanan pertama.", discountType: "percentage", discountValue: 25, maxDiscount: 50000, minOrder: 50000, isActive: true },
   });
 
   await prisma.banner.upsert({
     where: { id: "default-main-banner" },
     update: {},
-    create: { id: "default-main-banner", internalTitle: "Homepage Main Promo - First Care", bannerType: "main_banner", mode: "template", isActive: true, sortOrder: 1, badgeText: "FIRST CARE", headline: "Care datang langsung ke lokasi kamu", description: "Diskon 25% untuk layanan pertama.", ctaLabel: "Pakai Promo", ctaLink: "/services/home-cleaning", promoCode: "CARE25", helperText: "Berlaku untuk customer baru.", icon: "sparkles", accentStyle: "coral", templateVariant: "promo" },
+    create: { id: "default-main-banner", internalTitle: "Homepage Main Promo - First Care", bannerType: "main_banner", mode: "template", isActive: true, sortOrder: 1, badgeText: "FIRST CARE", headline: "Home care datang langsung ke lokasi kamu", description: "Diskon 25% untuk layanan pertama.", ctaLabel: "Pakai Promo", ctaLink: "/services/home-cleaning", promoCode: "CARE25", helperText: "Berlaku untuk customer baru.", icon: "sparkles", accentStyle: "coral", templateVariant: "promo" },
   });
   await prisma.banner.upsert({
     where: { id: "default-side-banner" },
     update: {},
-    create: { id: "default-side-banner", internalTitle: "Side Trust Card - Partner Terverifikasi", bannerType: "side_banner", mode: "template", isActive: true, sortOrder: 1, badgeText: "TRUSTED CARE", headline: "Partner pilihan. Care terpercaya.", description: "Semua partner melewati verifikasi dan standar layanan Ride N Care.", ctaLabel: "Pelajari", ctaLink: "/help", icon: "shield", accentStyle: "yellow", templateVariant: "trust" },
+    create: { id: "default-side-banner", internalTitle: "Side Trust Card - Partner Terverifikasi", bannerType: "side_banner", mode: "template", isActive: true, sortOrder: 1, badgeText: "TRUSTED CARE", headline: "Partner pilihan. Care terpercaya.", description: "Semua partner melewati verifikasi dan standar layanan Ride Home Care.", ctaLabel: "Pelajari", ctaLink: "/help", icon: "shield", accentStyle: "yellow", templateVariant: "trust" },
   });
 
   const homeCare = await prisma.service.findUniqueOrThrow({ where: { slug: "home-cleaning" }, include: { packages: true } });
@@ -160,7 +160,7 @@ async function main() {
     },
   });
 
-  await prisma.notification.create({ data: { userId: admin.id, title: "Seed selesai", message: "Database Ride N Care siap digunakan.", type: "system" } });
+  await prisma.notification.create({ data: { userId: admin.id, title: "Seed selesai", message: "Database Ride Home Care siap digunakan.", type: "system" } });
 }
 
 main()

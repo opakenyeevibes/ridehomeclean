@@ -9,7 +9,7 @@ export const customers: User[] = [
 ];
 
 export const admins: User[] = [
-  { id: "ADM-001", name: "Admin Ride N Care", phone: "081234567892", email: "admin@ridencare.test", role: "admin", addresses: [] },
+  { id: "ADM-001", name: "Admin Ride Home Care", phone: "081234567892", email: "admin@ridehomecare.test", role: "admin", addresses: [] },
 ];
 
 export const users = customers;

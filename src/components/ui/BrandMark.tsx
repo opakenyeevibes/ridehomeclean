@@ -10,6 +10,6 @@ export function BrandMark({ showName = false, compact = false, inverse = false, 
         <path d="m23.8 18 .8 2.1 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.1Z" fill="#2FA084" stroke={inverse ? "#2FA084" : "white"} strokeWidth=".65" strokeLinejoin="round"/>
       </svg>
     </span>
-    {showName && <span className={cn("whitespace-nowrap font-black tracking-[-.035em]", compact ? "text-sm" : "text-lg", inverse ? "text-white" : "text-[#2FA084]")}>Ride N <span className={inverse ? "text-[#FFE394]" : "text-[#2FA084]"}>Care</span></span>}
+    {showName && <span className={cn("whitespace-nowrap font-black tracking-[-.035em]", compact ? "text-sm" : "text-lg", inverse ? "text-white" : "text-[#2FA084]")}>Ride Home <span className={inverse ? "text-[#FFE394]" : "text-[#2FA084]"}>Care</span></span>}
   </span>;
 }

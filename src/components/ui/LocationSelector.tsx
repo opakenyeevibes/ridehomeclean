@@ -12,28 +12,39 @@ type SavedLocation = {
 };
 
 const defaultLocations: SavedLocation[] = [
-  { label: "Cianjur, Jawa Barat", detail: "Area layanan utama Ride N Care" },
+  { label: "Cianjur, Jawa Barat", detail: "Area layanan utama Ride Home Care" },
   { label: "Bandung, Jawa Barat", detail: "Area demo untuk jadwal berikutnya" },
   { label: "Jakarta Selatan", detail: "Area ekspansi customer & ops" },
 ];
 
 const storageKey = "ride-n-care-active-location";
 
+const readStoredLocation = () => {
+  if (typeof window === "undefined") return defaultLocations[0];
+  const saved = window.localStorage.getItem(storageKey);
+  if (!saved) return defaultLocations[0];
+  try {
+    return JSON.parse(saved) as SavedLocation;
+  } catch {
+    window.localStorage.removeItem(storageKey);
+    return defaultLocations[0];
+  }
+};
+
 export function LocationSelector({ compact = false, admin = false }: { compact?: boolean; admin?: boolean }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [location, setLocation] = useState<SavedLocation>(defaultLocations[0]);
+  const [location, setLocation] = useState<SavedLocation>(readStoredLocation);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        setLocation(JSON.parse(saved));
-      } catch {
-        window.localStorage.removeItem(storageKey);
-      }
-    }
+    const syncLocation = () => setLocation(readStoredLocation());
+    window.addEventListener("storage", syncLocation);
+    window.addEventListener("ride-n-care-location-change", syncLocation);
+    return () => {
+      window.removeEventListener("storage", syncLocation);
+      window.removeEventListener("ride-n-care-location-change", syncLocation);
+    };
   }, []);
 
   const shortCoord = useMemo(() => {
@@ -97,7 +108,11 @@ export function LocationSelector({ compact = false, admin = false }: { compact?:
       </button>
 
       {open && (
-        <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[310px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[24px] border border-[#D8DEDA] bg-white p-3 shadow-[0_22px_55px_rgba(22,51,46,.16)]">
+        <div className={cn(
+          "fixed inset-x-3 top-[104px] z-[80] max-h-[calc(100vh-124px)] overflow-y-auto rounded-[24px] border border-[#D8DEDA] bg-white p-3 shadow-[0_22px_55px_rgba(22,51,46,.16)]",
+          "sm:absolute sm:inset-x-auto sm:left-0 sm:top-[calc(100%+10px)] sm:w-[310px] sm:max-w-[calc(100vw-32px)]",
+          admin && "sm:left-auto sm:right-0",
+        )}>
           <div className="rounded-[20px] bg-[#E6F6EF] p-4">
             <div className="flex items-start gap-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white text-[#1F6F5F] shadow-sm">

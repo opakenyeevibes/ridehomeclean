@@ -21,7 +21,7 @@ const emptyBanner: Banner = {
   startDate: today,
   endDate: "",
   badgeText: "PROMO",
-  headline: "Care datang langsung ke lokasi kamu",
+  headline: "Home care datang langsung ke lokasi kamu",
   description: "Update teks banner langsung dari admin.",
   ctaLabel: "Lihat Detail",
   ctaLink: "/services/home-cleaning",
