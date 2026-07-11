@@ -88,10 +88,11 @@ async function main() {
   }
 
   for (const [index, [slug, name, category, icon, price, duration, description]] of serviceSeed.entries()) {
+    const isActive = slug !== "premium";
     const service = await prisma.service.upsert({
       where: { slug },
-      update: { name, category, icon, startingPrice: price, duration, description, isActive: true, sortOrder: index + 1 },
-      create: { slug, name, category, icon, startingPrice: price, duration, description, isActive: true, sortOrder: index + 1, rating: 4.8, totalReviews: 428 + index * 88 },
+      update: { name, category, icon, startingPrice: price, duration, description, isActive, sortOrder: index + 1 },
+      create: { slug, name, category, icon, startingPrice: price, duration, description, isActive, sortOrder: index + 1, rating: 4.8, totalReviews: 428 + index * 88 },
     });
 
     for (const [packageIndex, template] of packageTemplates.entries()) {

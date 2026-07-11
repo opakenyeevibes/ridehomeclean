@@ -93,6 +93,7 @@ export function CatalogManagerClient({ mode = "services" }: { mode?: "services" 
       ? items.map((item) => (item.id === editing.id ? editing : item))
       : [editing, ...items];
     persist(next);
+    syncServiceToDatabase(editing).catch(() => null);
     setEditing(null);
   };
 
@@ -104,7 +105,12 @@ export function CatalogManagerClient({ mode = "services" }: { mode?: "services" 
     if (window.confirm("Hapus layanan ini dari katalog lokal?")) persist(items.filter((item) => item.id !== id));
   };
 
-  const toggle = (id: string) => persist(items.map((item) => (item.id === id ? { ...item, active: !item.active } : item)));
+  const toggle = (id: string) => {
+    const next = items.map((item) => (item.id === id ? { ...item, active: !item.active } : item));
+    persist(next);
+    const changed = next.find((item) => item.id === id);
+    if (changed) syncServiceToDatabase(changed).catch(() => null);
+  };
   const reset = () => {
     if (window.confirm("Reset semua layanan dan paket ke data awal?")) {
       window.localStorage.removeItem(serviceStorageKey);
@@ -159,6 +165,49 @@ export function CatalogManagerClient({ mode = "services" }: { mode?: "services" 
 
     {editing && <ServiceEditor value={editing} onChange={setEditing} onClose={()=>setEditing(null)} onSave={saveEditing}/>}
   </div>;
+}
+
+async function syncServiceToDatabase(service: ManagedService) {
+  const body = {
+    name: service.name,
+    slug: service.id,
+    category: service.category,
+    description: service.description,
+    icon: service.styleKey,
+    startingPrice: service.startingPrice,
+    duration: service.duration,
+    isActive: service.active,
+    sortOrder: service.sortOrder,
+  };
+  const response = await fetch(`/api/admin/services/${service.id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (response.ok) return;
+  const created = await fetch("/api/admin/services", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!created.ok) return;
+  const payload = await created.json().catch(() => null);
+  const serviceId = payload?.data?.id as string | undefined;
+  if (!serviceId) return;
+  await Promise.all(service.packages.map((pkg, index) => fetch("/api/admin/packages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      serviceId,
+      name: pkg.name,
+      description: pkg.description,
+      price: pkg.price,
+      duration: pkg.duration,
+      includes: pkg.features,
+      isActive: true,
+      sortOrder: index + 1,
+    }),
+  }).catch(() => null)));
 }
 
 function PackageList({ items, onEdit }: { items: ManagedService[]; onEdit: (service: ManagedService) => void }) {

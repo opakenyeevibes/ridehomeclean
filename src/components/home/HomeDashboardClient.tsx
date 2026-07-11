@@ -9,7 +9,7 @@ import { ServiceCard } from "@/components/home/ServiceCard";
 import { RecommendedServiceCard } from "@/components/home/RecommendedServiceCard";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { orders } from "@/data/orders";
-import { readClientServices } from "@/lib/localData";
+import { fetchServices } from "@/lib/servicesData";
 import type { Service } from "@/types";
 
 export function HomeDashboardClient() {
@@ -18,15 +18,7 @@ export function HomeDashboardClient() {
 
   useEffect(() => {
     const load = () => {
-      setServices(readClientServices());
-      fetch("/api/prototype/services", { cache: "no-store" })
-        .then((response) => response.ok ? response.json() : null)
-        .then((payload) => {
-          if (!payload?.ok || !Array.isArray(payload.data)) return;
-          window.localStorage.setItem("ride-n-care-services", JSON.stringify(payload.data));
-          setServices(readClientServices());
-        })
-        .catch(() => null);
+      fetchServices().then(setServices).catch(() => null);
     };
     load();
     window.addEventListener("ride-n-care-services-updated", load);

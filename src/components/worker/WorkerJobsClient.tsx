@@ -6,15 +6,15 @@ import { ChevronRight, MapPin } from "lucide-react";
 import { orders as initialOrders } from "@/data/orders";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatPrice } from "@/lib/utils";
-import { fetchPrototypeOrders } from "@/lib/prototypeOrders";
+import { fetchOrders } from "@/lib/ordersData";
 import type { Order } from "@/types";
 
 export function WorkerJobsClient() {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
 
   useEffect(() => {
-    fetchPrototypeOrders().then(setOrders).catch(() => null);
-    const sync = () => fetchPrototypeOrders().then(setOrders).catch(() => null);
+    fetchOrders().then(setOrders).catch(() => null);
+    const sync = () => fetchOrders().then(setOrders).catch(() => null);
     window.addEventListener("ride-home-care-orders-updated", sync);
     return () => window.removeEventListener("ride-home-care-orders-updated", sync);
   }, []);

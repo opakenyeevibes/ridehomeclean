@@ -34,7 +34,7 @@ export default function LoginPage() {
 
   return <main className="relative grid min-h-screen place-items-center overflow-hidden bg-[#EEEEEE] p-4"><span className="absolute -left-20 -top-20 size-72 rounded-full bg-[#FFE394]/35 blur-3xl"/><span className="absolute -bottom-24 -right-16 size-72 rounded-full bg-[#A7D8FF]/30 blur-3xl"/><section className="relative w-full max-w-lg"><div className="mb-7 text-center"><BrandMark showName className="justify-center"/><h1 className="mt-6 text-3xl font-black tracking-[-.04em]">Masuk ke Ride Home Care</h1><p className="mt-2 text-sm text-[#667085]">Masuk untuk booking layanan home care langsung ke lokasi kamu.</p></div>
     <form onSubmit={login} className="card space-y-3 p-5">
-      <GoogleAuthButton label="Masuk cepat dengan Google" />
+      <GoogleAuthButton label="Google segera hadir" />
       <div className="flex items-center gap-3 py-1"><span className="h-px flex-1 bg-[#E5EAE8]"/><span className="text-[10px] font-black tracking-[.12em] text-[#98A2B3]">ATAU MASUK MANUAL</span><span className="h-px flex-1 bg-[#E5EAE8]"/></div>
       <label className="block"><span className="mb-2 block text-xs font-black">Email atau phone</span><input value={identifier} onChange={(event)=>setIdentifier(event.target.value)} placeholder="contoh: nama@email.com" className="h-12 w-full rounded-2xl border border-[#D8DEDA] px-4 text-sm outline-none focus:border-[#2FA084]"/></label>
       <label className="block"><span className="mb-2 block text-xs font-black">Password</span><input value={password} onChange={(event)=>setPassword(event.target.value)} type="password" className="h-12 w-full rounded-2xl border border-[#D8DEDA] px-4 text-sm outline-none focus:border-[#2FA084]"/></label>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { currentWorker } from "@/data/workers";
 import { orders } from "@/data/orders";
 import { formatPrice } from "@/lib/utils";
-import { fetchPrototypeOrders } from "@/lib/prototypeOrders";
+import { fetchOrders } from "@/lib/ordersData";
 import type { Order } from "@/types";
 
 export default function WorkerDashboard() {
@@ -15,7 +15,7 @@ export default function WorkerDashboard() {
   const [request, setRequest] = useState(true);
   const [data, setData] = useState<Order[]>(orders);
   useEffect(() => {
-    fetchPrototypeOrders().then(setData).catch(() => null);
+    fetchOrders().then(setData).catch(() => null);
   }, []);
   const active = data[0] ?? orders[0];
   const incoming = data.find((order) => order.status === "created" || order.status === "searching" || order.status === "scheduled") ?? data[0] ?? orders[0];

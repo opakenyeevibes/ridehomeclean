@@ -1,42 +1,63 @@
 "use client";
-import { useEffect, useSyncExternalStore } from "react";
+
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { UserRole } from "@/types";
 import { AccessDenied } from "./AccessDenied";
 import { LoadingState } from "@/components/ui/LoadingState";
 
-const subscribe = (callback: () => void) => {
-  window.addEventListener("storage", callback);
-  window.addEventListener("role-change", callback);
-  return () => {
-    window.removeEventListener("storage", callback);
-    window.removeEventListener("role-change", callback);
-  };
+const isLocalPreviewHost = () => {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1" || host.startsWith("192.168.") || host.startsWith("10.") || host.endsWith(".local");
 };
-
-const getRoleSnapshot = () => localStorage.getItem("selectedRole") ?? "missing";
-const getServerSnapshot = () => "checking";
 
 export function ProtectedRoute({ role, children }: { role: UserRole; children: React.ReactNode }) {
   const router = useRouter();
-  const selected = useSyncExternalStore(subscribe, getRoleSnapshot, getServerSnapshot);
+  const [selected, setSelected] = useState<UserRole | "checking" | "missing">("checking");
+
   useEffect(() => {
-    if (selected !== "missing") return;
     let active = true;
-    fetch("/api/auth/me")
-      .then((response) => response.ok ? response.json() : null)
-      .then((payload) => {
-        if (!active) return;
-        if (payload?.ok && payload.data?.role) {
-          localStorage.setItem("selectedRole", payload.data.role);
-          window.dispatchEvent(new Event("role-change"));
-        } else {
+    const verify = () => {
+      setSelected("checking");
+      fetch("/api/auth/me", { cache: "no-store" })
+        .then((response) => response.ok ? response.json() : null)
+        .then((payload) => {
+          if (!active) return;
+          if (payload?.ok && payload.data?.role) {
+            localStorage.setItem("selectedRole", payload.data.role);
+            setSelected(payload.data.role);
+            return;
+          }
+          const localRole = localStorage.getItem("selectedRole") as UserRole | null;
+          if (isLocalPreviewHost() && localRole) {
+            setSelected(localRole);
+            return;
+          }
+          localStorage.removeItem("selectedRole");
+          setSelected("missing");
           router.replace("/login");
-        }
-      })
-      .catch(() => router.replace("/login"));
-    return () => { active = false; };
-  }, [selected, router]);
+        })
+        .catch(() => {
+          if (!active) return;
+          const localRole = localStorage.getItem("selectedRole") as UserRole | null;
+          if (isLocalPreviewHost() && localRole) setSelected(localRole);
+          else {
+            setSelected("missing");
+            router.replace("/login");
+          }
+        });
+    };
+    verify();
+    window.addEventListener("role-change", verify);
+    window.addEventListener("storage", verify);
+    return () => {
+      active = false;
+      window.removeEventListener("role-change", verify);
+      window.removeEventListener("storage", verify);
+    };
+  }, [router]);
+
   if (selected === "checking" || selected === "missing") return <div className="mx-auto min-h-screen max-w-3xl p-6"><LoadingState/></div>;
   if (selected !== role) return <AccessDenied/>;
   return children;

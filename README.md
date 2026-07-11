@@ -24,7 +24,7 @@ Jika port 3000 sedang dipakai, Next.js biasanya menawarkan port berikutnya, misa
 
 ## Auth dan role
 
-Production foundation sudah tersedia melalui MySQL + Prisma:
+Production foundation sudah tersedia melalui Supabase Postgres + Prisma:
 
 - `/api/auth/register`
 - `/api/auth/login`
@@ -40,7 +40,7 @@ password: Admin12345!
 
 ## Mengaktifkan role mock lokal
 
-Quick role berbasis `localStorage` masih tersedia di `/login` sebagai fallback demo lokal. Production login memakai user dari MySQL.
+Quick role berbasis `localStorage` masih tersedia sebagai fallback demo lokal saat database tidak aktif. Production login memakai user dari Supabase Postgres melalui Prisma.
 
 1. Buka `/login`.
 2. Pilih salah satu role:
@@ -77,14 +77,14 @@ location.href = "/login"
 - `/worker/jobs`, `/worker/jobs/ORD-001`, `/worker/schedule`, `/worker/earnings`, `/worker/profile` — modul worker
 - `/partner` dan `/partner/jobs` — redirect legacy ke route worker
 
-## Database MySQL production
+## Database Supabase Postgres production
 
-Project ini disiapkan untuk Hostinger Business Managed Node.js Web Apps + Hostinger MySQL menggunakan Prisma ORM.
+Project ini disiapkan untuk Hostinger Business Managed Node.js Web Apps + Supabase Postgres menggunakan Prisma ORM.
 
 File penting:
 
-- `prisma/schema.prisma` — schema database MySQL.
-- `prisma/migrations/0001_init/migration.sql` — migration SQL awal.
+- `prisma/schema.prisma` — schema database PostgreSQL/Supabase.
+- `prisma/migrations/0001_init/migration.sql` — migration lama MySQL, jangan dipakai untuk Supabase. Untuk MVP gunakan `db:push`.
 - `prisma/seed.ts` — seed admin, customer, worker, layanan, paket, add-ons, banners, promos, sample order.
 - `.env.example` — contoh environment variable production.
 
@@ -104,12 +104,14 @@ npm run db:push
 npm run db:seed
 ```
 
-Untuk production dengan migration:
+Untuk production MVP Supabase gunakan:
 
 ```bash
-npm run db:migrate
+npm run db:push
 npm run db:seed
 ```
+
+Catatan: `db:migrate` sementara diarahkan ke `prisma db push` sampai migration PostgreSQL final dibuat.
 
 ## API production
 
@@ -159,16 +161,19 @@ Format yang didukung:
 - PNG/JPG/JPEG/WEBP maksimal 5 MB.
 - SVG maksimal 2 MB dengan validasi sederhana untuk menolak script berbahaya.
 
-## Deploying Ride Home Care to Hostinger Business with MySQL
+## Deploying Ride Home Care to Hostinger Business with Supabase
 
-1. Buat database MySQL di Hostinger hPanel.
-2. Salin database host, database name, username, dan password.
+1. Buat project Supabase.
+2. Ambil pooled connection string dan direct connection string dari Supabase Database settings.
 3. Tambahkan environment variables di Hostinger Node.js app:
 
 ```env
 NEXT_PUBLIC_APP_NAME="Ride Home Care"
 NEXT_PUBLIC_APP_URL="https://yourdomain.com"
-DATABASE_URL="mysql://DB_USER:DB_PASSWORD@DB_HOST:3306/DB_NAME"
+NEXT_PUBLIC_SUPABASE_URL="https://PROJECT_REF.supabase.co"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="sb_publishable_xxx"
+DATABASE_URL="postgresql://postgres.PROJECT_REF:DB_PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+DIRECT_URL="postgresql://postgres.PROJECT_REF:DB_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres"
 UPLOAD_DIR="public/uploads"
 NEXT_PUBLIC_UPLOAD_URL="/uploads"
 AUTH_SECRET="isi-secret-panjang-random"
@@ -193,13 +198,7 @@ npm run build
 npm run start
 ```
 
-8. Jalankan migration:
-
-```bash
-npm run db:migrate
-```
-
-Jika migration history belum dipakai dan ingin sinkron schema cepat:
+8. Sinkronkan schema Supabase:
 
 ```bash
 npm run db:push
@@ -216,7 +215,7 @@ npm run db:seed
 
 ## Struktur data lama
 
-Data mock masih ada di `src/data` sebagai fallback UI/demo lokal. Production API menggunakan Prisma + MySQL.
+Data mock masih ada di `src/data` sebagai fallback UI/demo lokal. Production flow utama sekarang mencoba API Prisma + Supabase lebih dulu, lalu fallback prototype jika database/session belum tersedia.
 
 ## Banner Management
 
@@ -240,4 +239,4 @@ localStorage.removeItem("ride-n-care-banners")
 location.reload()
 ```
 
-Catatan: UI admin banner lama masih mendukung preview lokal, sementara API production sudah menyediakan upload file server ke `public/uploads/banners` dan field URL di MySQL.
+Catatan: UI admin banner lama masih mendukung preview lokal, sementara API production sudah menyediakan upload file server ke `public/uploads/banners` dan field URL di Supabase Postgres.

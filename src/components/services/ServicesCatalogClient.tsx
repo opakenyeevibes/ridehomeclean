@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ServiceCard } from "@/components/home/ServiceCard";
-import { readClientServices } from "@/lib/localData";
+import { fetchServices } from "@/lib/servicesData";
 import type { Service } from "@/types";
 
 export function ServicesCatalogClient() {
@@ -15,15 +15,7 @@ export function ServicesCatalogClient() {
 
   useEffect(() => {
     const load = () => {
-      setServices(readClientServices());
-      fetch("/api/prototype/services", { cache: "no-store" })
-        .then((response) => response.ok ? response.json() : null)
-        .then((payload) => {
-          if (!payload?.ok || !Array.isArray(payload.data)) return;
-          window.localStorage.setItem("ride-n-care-services", JSON.stringify(payload.data));
-          setServices(readClientServices());
-        })
-        .catch(() => null);
+      fetchServices().then(setServices).catch(() => null);
     };
     load();
     window.addEventListener("ride-n-care-services-updated", load);

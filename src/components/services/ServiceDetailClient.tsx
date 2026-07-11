@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PackageCard } from "@/components/services/PackageCard";
 import { Button } from "@/components/ui/Button";
 import { readClientService } from "@/lib/localData";
+import { fetchService } from "@/lib/servicesData";
 import { formatPrice } from "@/lib/utils";
 import type { Service } from "@/types";
 
@@ -21,15 +22,10 @@ export function ServiceDetailClient({ id }: { id: string }) {
       setService(next);
       setSelectedPackageId(next?.packages[0]?.id ?? "");
       setLoaded(true);
-      fetch("/api/prototype/services", { cache: "no-store" })
-        .then((response) => response.ok ? response.json() : null)
-        .then((payload) => {
-          if (!payload?.ok || !Array.isArray(payload.data)) return;
-          window.localStorage.setItem("ride-n-care-services", JSON.stringify(payload.data));
-          const synced = readClientService(id);
+      fetchService(id)
+        .then((synced) => {
           setService(synced);
           setSelectedPackageId(synced?.packages[0]?.id ?? "");
-          setLoaded(true);
         })
         .catch(() => null);
     };
