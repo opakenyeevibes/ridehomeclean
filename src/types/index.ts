@@ -1,8 +1,11 @@
 import type { LucideIcon } from "lucide-react";
 
-export type Package = { id: string; name: string; price: number; duration: string; description: string; features: string[]; popular?: boolean };
-export type AddOn = { id: string; name: string; price: number; duration: string };
-export type Service = { id: string; name: string; shortName: string; category: string; description: string; tagline: string; rating: number; totalReviews: number; startingPrice: number; duration: string; color: string; accent: string; icon: LucideIcon; packages: Package[]; addOns: AddOn[]; active?: boolean };
+export type PricingUnit = "per_order" | "per_room" | "per_bathroom" | "per_vehicle" | "per_m2" | "quote";
+export type WorkerRule = { min: number; recommended: number; max: number; allowManual?: boolean };
+export type QuantityRule = { label: string; unit: string; min: number; max: number; helper: string };
+export type Package = { id: string; name: string; price: number; duration: string; description: string; features: string[]; popular?: boolean; minWorkers?: number; recommendedWorkers?: number };
+export type AddOn = { id: string; name: string; price: number; duration: string; serviceIds?: string[]; packageIds?: string[] };
+export type Service = { id: string; name: string; shortName: string; category: string; description: string; tagline: string; rating: number; totalReviews: number; startingPrice: number; duration: string; color: string; accent: string; icon: LucideIcon; packages: Package[]; addOns: AddOn[]; active?: boolean; pricingUnit?: PricingUnit; quantityRule?: QuantityRule; workerRule?: WorkerRule; customQuoteOnly?: boolean };
 export type ManagedService = Omit<Service, "icon" | "color" | "accent"> & { styleKey: string; sortOrder: number; active: boolean };
 export type UserRole = "customer" | "worker" | "admin";
 export type Address = { id: string; label: string; address: string; notes?: string; primary?: boolean };
@@ -11,7 +14,7 @@ export type WorkerStatus = "available" | "offline" | "busy" | "on_the_way" | "wo
 export type Worker = { id: string; name: string; phone: string; email?: string; role: "worker"; skills: string[]; status: WorkerStatus; rating: number; completedJobs: number; earningsToday: number; earningsTotal: number; initials: string; approved: boolean };
 export type OrderStatus = "created" | "waiting_confirmation" | "searching" | "worker_found" | "partner_found" | "on_the_way" | "arrived" | "working" | "in_progress" | "work_completed" | "completed" | "rating" | "cancelled" | "scheduled";
 export type PaymentStatus = "paid" | "unpaid" | "refunded";
-export type Order = { id: string; customerId: string; customerName: string; workerId?: string; workerName: string; serviceId: string; serviceName: string; packageName: string; status: OrderStatus; date: string; time: string; address: string; location: string; totalPrice: number; paymentMethod: string; paymentStatus: PaymentStatus; notes: string };
+export type Order = { id: string; customerId: string; customerName: string; workerId?: string; workerName: string; serviceId: string; serviceName: string; packageName: string; status: OrderStatus; date: string; time: string; address: string; location: string; totalPrice: number; paymentMethod: string; paymentStatus: PaymentStatus; notes: string; quantityLabel?: string; quantity?: number; teamSize?: string; workerPreference?: string; addOnNames?: string[] };
 export type WorkerJobStatus = "incoming" | "accepted" | "on_the_way" | "arrived" | "working" | "completed" | "rejected";
 export type Promo = { id: string; eyebrow: string; title: string; subtitle: string; code: string; tone: string; active?: boolean; sortOrder?: number };
 export type PaymentMethod = { id: string; name: string; enabled: boolean; description?: string };

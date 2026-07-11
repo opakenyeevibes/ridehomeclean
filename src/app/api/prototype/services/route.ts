@@ -9,10 +9,30 @@ const filePath = join(process.cwd(), ".prototype", "services.json");
 async function readStore() {
   try {
     const raw = await readFile(filePath, "utf8");
-    return JSON.parse(raw) as ManagedService[];
+    return normalizeStore(JSON.parse(raw) as ManagedService[]);
   } catch {
     return defaultManagedServices;
   }
+}
+
+function normalizeStore(items: ManagedService[]) {
+  const defaultById = new Map(defaultManagedServices.map((item) => [item.id, item]));
+  const seen = new Set<string>();
+  const normalized = items.map((item) => {
+    const fallback = defaultById.get(item.id);
+    seen.add(item.id);
+    if (!fallback || (item.quantityRule && item.workerRule && item.pricingUnit)) return item;
+    return {
+      ...fallback,
+      active: item.active ?? fallback.active,
+      sortOrder: item.sortOrder ?? fallback.sortOrder,
+      styleKey: item.styleKey ?? fallback.styleKey,
+    };
+  });
+  return [
+    ...normalized,
+    ...defaultManagedServices.filter((item) => !seen.has(item.id)),
+  ].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 async function writeStore(items: ManagedService[]) {

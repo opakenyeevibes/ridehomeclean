@@ -20,6 +20,26 @@ const safeParse = <T>(value: string | null, fallback: T): T => {
   }
 };
 
+const normalizeManagedServices = (items: ManagedService[]) => {
+  const defaultById = new Map(defaultManagedServices.map((item) => [item.id, item]));
+  const seen = new Set<string>();
+  const normalized = items.map((item) => {
+    const fallback = defaultById.get(item.id);
+    seen.add(item.id);
+    if (!fallback || (item.quantityRule && item.workerRule && item.pricingUnit)) return item;
+    return {
+      ...fallback,
+      active: item.active ?? fallback.active,
+      sortOrder: item.sortOrder ?? fallback.sortOrder,
+      styleKey: item.styleKey ?? fallback.styleKey,
+    };
+  });
+  return [
+    ...normalized,
+    ...defaultManagedServices.filter((item) => !seen.has(item.id)),
+  ].sort((a, b) => a.sortOrder - b.sortOrder);
+};
+
 export const managedToService = (item: ManagedService): Service => {
   const style = categoryStyles[(item.styleKey as CategoryStyleKey) || "custom"] ?? categoryStyles.custom;
   return {
@@ -32,7 +52,7 @@ export const managedToService = (item: ManagedService): Service => {
 
 export const readManagedServices = () => {
   if (typeof window === "undefined") return defaultManagedServices;
-  return safeParse<ManagedService[]>(window.localStorage.getItem(serviceStorageKey), defaultManagedServices);
+  return normalizeManagedServices(safeParse<ManagedService[]>(window.localStorage.getItem(serviceStorageKey), defaultManagedServices));
 };
 
 export const saveManagedServices = (items: ManagedService[]) => {
@@ -46,7 +66,9 @@ export const readClientServices = () =>
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map(managedToService);
 
-export const readClientService = (id: string) => readClientServices().find((service) => service.id === id) ?? readClientServices()[0] ?? defaultServices[0];
+export const readClientService = (id: string) => readClientServices().find((service) => service.id === id) ?? null;
+
+export const readFallbackClientService = () => readClientServices()[0] ?? defaultServices[0];
 
 export const readPromos = () => {
   const fallback = defaultPromos.map((promo, index) => ({ ...promo, active: true, sortOrder: index + 1 }));

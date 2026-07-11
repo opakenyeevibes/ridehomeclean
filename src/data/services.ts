@@ -1,23 +1,38 @@
-import type { Service } from "@/types";
+import type { AddOn, Package, QuantityRule, Service, WorkerRule } from "@/types";
 import { categoryStyles, type CategoryStyleKey } from "@/lib/categoryStyles";
 
-const carePackages = [
-  { id: "basic", name: "Basic Care", price: 0, duration: "2 jam", description: "Perawatan ringan untuk kebutuhan rutin sehari-hari.", features: ["Area utama dirawat", "Debu dan kotoran ringan", "Perapian dasar"] },
-  { id: "fresh", name: "Fresh Care", price: 0, duration: "3 jam", description: "Perawatan lebih menyeluruh agar area terasa segar dan nyaman.", features: ["Semua layanan Basic Care", "Area detail prioritas", "Finishing dan pengecekan"], popular: true },
-  { id: "deep", name: "Deep Care", price: 0, duration: "4–5 jam", description: "Perawatan mendalam untuk sudut dan noda yang jarang tersentuh.", features: ["Semua layanan Fresh Care", "Noda membandel", "Detail furnitur dan sudut"] },
-  { id: "premium", name: "Premium Care", price: 0, duration: "5–6 jam", description: "Layanan prioritas dengan partner berpengalaman dan hasil maksimal.", features: ["Semua layanan Deep Care", "Partner prioritas", "Pengecekan hasil menyeluruh"] },
-  { id: "custom", name: "Custom Care", price: 0, duration: "Sesuai kebutuhan", description: "Paket fleksibel yang disesuaikan dengan kebutuhan lokasimu.", features: ["Konsultasi kebutuhan", "Ruang lingkup fleksibel", "Estimasi transparan"] },
-];
-
-const addOns = [
-  { id: "fridge", name: "Care kulkas", price: 30000, duration: "+30 mnt" },
-  { id: "ironing", name: "Care pakaian", price: 25000, duration: "+45 mnt" },
-  { id: "balcony", name: "Care balkon / teras", price: 20000, duration: "+30 mnt" },
-];
-
-type ServiceConfig = Pick<Service, "id" | "name" | "shortName" | "startingPrice" | "duration" | "tagline" | "category" | "description"> & {
+type ServiceConfig = Pick<Service, "id" | "name" | "shortName" | "startingPrice" | "duration" | "tagline" | "category" | "description" | "pricingUnit" | "customQuoteOnly"> & {
   styleKey: CategoryStyleKey;
+  packages: Package[];
+  addOns: AddOn[];
+  quantityRule: QuantityRule;
+  workerRule: WorkerRule;
 };
+
+const packageOf = (id: string, name: string, price: number, duration: string, description: string, features: string[], popular = false, recommendedWorkers?: number): Package => ({
+  id,
+  name,
+  price,
+  duration,
+  description,
+  features,
+  popular,
+  recommendedWorkers,
+});
+
+const addonOf = (id: string, name: string, price: number, duration: string, packageIds?: string[]): AddOn => ({ id, name, price, duration, packageIds });
+
+const quantityRules = {
+  home: { label: "Ukuran rumah", unit: "area", min: 1, max: 4, helper: "1 area = rumah kecil/kamar utama. Tambah area untuk rumah lebih besar." },
+  room: { label: "Jumlah kamar", unit: "kamar", min: 1, max: 8, helper: "Harga estimasi mengikuti jumlah kamar yang ingin dirawat." },
+  bathroom: { label: "Jumlah kamar mandi", unit: "kamar mandi", min: 1, max: 6, helper: "Tambahkan jumlah kamar mandi agar durasi dan tim lebih akurat." },
+  outdoor: { label: "Luas area outdoor", unit: "area", min: 1, max: 5, helper: "1 area untuk teras/halaman kecil, tambah untuk taman atau halaman luas." },
+  car: { label: "Jumlah mobil", unit: "mobil", min: 1, max: 4, helper: "Partner membawa perlengkapan sesuai jumlah mobil." },
+  motor: { label: "Jumlah motor", unit: "motor", min: 1, max: 6, helper: "Harga dan durasi mengikuti jumlah motor yang dicuci." },
+  office: { label: "Luas kantor", unit: "area", min: 1, max: 8, helper: "1 area setara ruang kecil/toko/studio compact." },
+  premium: { label: "Skala kebutuhan", unit: "area", min: 1, max: 6, helper: "Premium Care cocok untuk deep cleaning rumah besar, pindahan, atau setelah renovasi." },
+  custom: { label: "Estimasi kebutuhan", unit: "request", min: 1, max: 3, helper: "Custom Care adalah request awal. Tim akan bantu estimasi lanjutan." },
+} satisfies Record<string, QuantityRule>;
 
 const make = ({ styleKey, ...config }: ServiceConfig): Service => ({
   ...config,
@@ -26,21 +41,248 @@ const make = ({ styleKey, ...config }: ServiceConfig): Service => ({
   accent: categoryStyles[styleKey].icon,
   rating: 4.8,
   totalReviews: Math.floor(config.startingPrice / 75) + 428,
-  packages: carePackages.map((item, index) => ({ ...item, price: config.startingPrice + index * Math.round(config.startingPrice * .55) })),
-  addOns,
 });
 
 export const services: Service[] = [
-  make({ id: "home-cleaning", name: "Home Care", shortName: "Home Care", styleKey: "home", startingPrice: 75000, duration: "2–3 jam", tagline: "Rumah rapi, nyaman, dan terawat", category: "Home Care", description: "Layanan bersih rumah panggilan dari Ride Home Care. Partner datang ke lokasi kamu untuk membantu rumah terasa lebih rapi, bersih, dan nyaman." }),
-  make({ id: "room-cleaning", name: "Care Kamar", shortName: "Kamar", styleKey: "room", startingPrice: 45000, duration: "1–2 jam", tagline: "Kamar nyaman untuk istirahat", category: "Home Care", description: "Perawatan kamar panggilan untuk membantu membersihkan debu, merapikan area tidur, dan membuat kamar terasa lebih nyaman." }),
-  make({ id: "bathroom", name: "Care Kamar Mandi", shortName: "Kamar Mandi", styleKey: "bathroom", startingPrice: 55000, duration: "1–2 jam", tagline: "Lebih bersih dan segar", category: "Home Care", description: "Perawatan kamar mandi untuk membersihkan kerak ringan, lantai, dinding, dan area sanitasi agar kembali segar dan nyaman digunakan." }),
-  make({ id: "garden", name: "Outdoor Care", shortName: "Outdoor", styleKey: "outdoor", startingPrice: 85000, duration: "2–3 jam", tagline: "Area luar kembali rapi", category: "Outdoor Care", description: "Layanan bersih area luar rumah seperti halaman, teras, taman kecil, dan area sekitar rumah." }),
-  make({ id: "car-wash", name: "Auto Care", shortName: "Auto Care", styleKey: "car", startingPrice: 65000, duration: "60–90 mnt", tagline: "Kendaraan terawat di rumah", category: "Auto Care", description: "Layanan perawatan kendaraan panggilan. Partner Ride Home Home care datang ke lokasi kamu untuk membersihkan mobil atau motor sesuai paket yang dipilih." }),
-  make({ id: "bike-wash", name: "Motor Care", shortName: "Motor Care", styleKey: "motor", startingPrice: 30000, duration: "45 mnt", tagline: "Motor bersih tanpa antre", category: "Auto Care", description: "Layanan perawatan motor ringan di lokasi kamu, mulai dari pencucian bodi hingga perapian area kendaraan." }),
-  make({ id: "deep-clean", name: "Deep Care", shortName: "Deep Clean", styleKey: "deepClean", startingPrice: 225000, duration: "4–6 jam", tagline: "Care mendalam sampai sudut", category: "Premium Care", description: "Perawatan mendalam untuk rumah atau ruang yang membutuhkan penanganan detail, termasuk sudut dan noda yang jarang tersentuh." }),
-  make({ id: "office", name: "Office Care", shortName: "Office Care", styleKey: "office", startingPrice: 275000, duration: "4–6 jam", tagline: "Ruang kerja nyaman dan terawat", category: "Office Care", description: "Layanan care untuk kantor, toko, studio, atau ruang usaha kecil agar tetap rapi, bersih, dan nyaman digunakan." }),
-  make({ id: "premium", name: "Premium Care", shortName: "Premium", styleKey: "premium", startingPrice: 350000, duration: "6–8 jam", tagline: "Prioritas untuk kebutuhan spesial", category: "Premium Care", description: "Layanan prioritas untuk kebutuhan deep cleaning, request khusus, dan jadwal fleksibel." }),
-  make({ id: "custom", name: "Custom Care", shortName: "Custom", styleKey: "custom", startingPrice: 50000, duration: "Sesuai kebutuhan", tagline: "Care yang mengikuti kebutuhanmu", category: "Premium Care", description: "Ceritakan kebutuhan khususmu dan tim Ride Home Care akan membantu menyusun ruang lingkup layanan yang paling sesuai." }),
+  make({
+    id: "home-cleaning",
+    name: "Home Care",
+    shortName: "Home Care",
+    styleKey: "home",
+    startingPrice: 75000,
+    duration: "2–4 jam",
+    tagline: "Rumah rapi, nyaman, dan terawat",
+    category: "Home Care",
+    pricingUnit: "per_order",
+    quantityRule: quantityRules.home,
+    workerRule: { min: 1, recommended: 1, max: 3, allowManual: true },
+    description: "Layanan bersih rumah panggilan dari Ride Home Care. Partner datang ke lokasi kamu untuk membantu rumah terasa lebih rapi, bersih, dan nyaman.",
+    packages: [
+      packageOf("basic", "Basic Care", 75000, "2 jam", "Perawatan ringan untuk area utama rumah.", ["Sapu & pel ringan", "Lap debu area utama", "Perapian dasar"], false, 1),
+      packageOf("fresh", "Fresh Care", 125000, "3 jam", "Perawatan rumah lebih menyeluruh untuk rutinitas mingguan.", ["Semua Basic Care", "Dapur ringan", "Kamar mandi ringan", "Finishing ruangan"], true, 1),
+      packageOf("deep", "Deep Care", 225000, "4–5 jam", "Perawatan detail untuk sudut dan noda yang jarang tersentuh.", ["Semua Fresh Care", "Detail sudut", "Noda membandel ringan", "Pengecekan hasil"], false, 2),
+      packageOf("premium", "Premium Care", 350000, "5–6 jam", "Tim prioritas untuk rumah lebih besar atau kebutuhan hasil maksimal.", ["Semua Deep Care", "Partner prioritas", "Checklist hasil akhir", "Rekomendasi 2 partner"], false, 2),
+    ],
+    addOns: [
+      addonOf("kitchen", "Care dapur", 35000, "+35 mnt"),
+      addonOf("fridge", "Care kulkas", 30000, "+30 mnt"),
+      addonOf("ironing", "Care pakaian", 25000, "+45 mnt"),
+      addonOf("balcony", "Care balkon / teras", 25000, "+30 mnt"),
+    ],
+  }),
+  make({
+    id: "room-cleaning",
+    name: "Kamar Care",
+    shortName: "Kamar",
+    styleKey: "room",
+    startingPrice: 45000,
+    duration: "1–2 jam",
+    tagline: "Kamar nyaman untuk istirahat",
+    category: "Home Care",
+    pricingUnit: "per_room",
+    quantityRule: quantityRules.room,
+    workerRule: { min: 1, recommended: 1, max: 2, allowManual: true },
+    description: "Perawatan kamar panggilan untuk membersihkan debu, merapikan area tidur, dan membuat kamar terasa lebih nyaman.",
+    packages: [
+      packageOf("basic", "Basic Room", 45000, "1 jam", "Perawatan ringan untuk satu kamar.", ["Sapu/pel area kamar", "Lap debu ringan", "Rapi tempat tidur"], false, 1),
+      packageOf("fresh", "Fresh Room", 75000, "1–2 jam", "Kamar terasa lebih segar dengan detail tambahan.", ["Semua Basic Room", "Lap meja/lemari luar", "Buang sampah", "Finishing aroma ringan"], true, 1),
+      packageOf("deep", "Deep Room", 120000, "2–3 jam", "Detail care untuk kamar yang butuh perhatian ekstra.", ["Semua Fresh Room", "Sudut & kolong", "Noda ringan", "Detail perabot luar"], false, 1),
+    ],
+    addOns: [
+      addonOf("change-sheet", "Ganti sprei", 15000, "+10 mnt"),
+      addonOf("wardrobe", "Rapikan lemari luar", 25000, "+25 mnt"),
+      addonOf("ironing-room", "Setrika pakaian", 25000, "+45 mnt"),
+    ],
+  }),
+  make({
+    id: "bathroom",
+    name: "Kamar Mandi Care",
+    shortName: "Kamar Mandi",
+    styleKey: "bathroom",
+    startingPrice: 55000,
+    duration: "1–2 jam",
+    tagline: "Lebih bersih dan segar",
+    category: "Home Care",
+    pricingUnit: "per_bathroom",
+    quantityRule: quantityRules.bathroom,
+    workerRule: { min: 1, recommended: 1, max: 2, allowManual: true },
+    description: "Perawatan kamar mandi untuk membersihkan kerak ringan, lantai, dinding, dan area sanitasi agar kembali segar.",
+    packages: [
+      packageOf("basic", "Basic Bath", 55000, "1 jam", "Perawatan rutin kamar mandi.", ["Lantai & closet", "Wastafel", "Bilas area basah"], false, 1),
+      packageOf("fresh", "Fresh Bath", 90000, "1–2 jam", "Perawatan lebih segar untuk kamar mandi aktif.", ["Semua Basic Bath", "Dinding area basah", "Kaca ringan", "Finishing deodorizer"], true, 1),
+      packageOf("deep", "Deep Bath", 145000, "2–3 jam", "Untuk kerak dan detail yang lebih membandel.", ["Semua Fresh Bath", "Kerak ringan-menengah", "Sela nat", "Detail sudut"], false, 1),
+    ],
+    addOns: [
+      addonOf("glass-bath", "Care kaca kamar mandi", 25000, "+20 mnt"),
+      addonOf("drain", "Bersih saluran ringan", 20000, "+15 mnt"),
+    ],
+  }),
+  make({
+    id: "garden",
+    name: "Outdoor Care",
+    shortName: "Outdoor",
+    styleKey: "outdoor",
+    startingPrice: 85000,
+    duration: "2–3 jam",
+    tagline: "Area luar kembali rapi",
+    category: "Outdoor Care",
+    pricingUnit: "per_order",
+    quantityRule: quantityRules.outdoor,
+    workerRule: { min: 1, recommended: 2, max: 3, allowManual: true },
+    description: "Layanan bersih area luar rumah seperti halaman, teras, taman kecil, dan area sekitar rumah.",
+    packages: [
+      packageOf("basic", "Basic Outdoor", 85000, "2 jam", "Rapikan area luar ringan.", ["Sapu halaman/teras", "Kumpulkan daun", "Buang sampah ringan"], false, 1),
+      packageOf("fresh", "Fresh Outdoor", 145000, "3 jam", "Outdoor lebih rapi untuk halaman aktif.", ["Semua Basic Outdoor", "Sikat teras ringan", "Rapikan pot/area kecil"], true, 2),
+      packageOf("deep", "Deep Outdoor", 240000, "4–5 jam", "Untuk halaman lebih luas dan detail.", ["Semua Fresh Outdoor", "Area sudut", "Noda lantai luar ringan", "Rekomendasi 2 partner"], false, 2),
+    ],
+    addOns: [
+      addonOf("terrace-brush", "Sikat teras", 35000, "+30 mnt"),
+      addonOf("small-garden", "Rapikan taman kecil", 45000, "+45 mnt"),
+    ],
+  }),
+  make({
+    id: "car-wash",
+    name: "Auto Care",
+    shortName: "Auto Care",
+    styleKey: "car",
+    startingPrice: 65000,
+    duration: "60–90 mnt",
+    tagline: "Kendaraan terawat di rumah",
+    category: "Auto Care",
+    pricingUnit: "per_vehicle",
+    quantityRule: quantityRules.car,
+    workerRule: { min: 1, recommended: 1, max: 2, allowManual: true },
+    description: "Layanan perawatan kendaraan panggilan. Partner Ride Home Care datang ke lokasi untuk membersihkan mobil sesuai paket.",
+    packages: [
+      packageOf("basic", "Basic Car Wash", 65000, "60 mnt", "Cuci exterior mobil di lokasi.", ["Bodi exterior", "Velg ringan", "Lap kering"], false, 1),
+      packageOf("fresh", "Fresh Car Wash", 95000, "90 mnt", "Exterior lebih detail plus interior ringan.", ["Semua Basic", "Vacuum ringan", "Dashboard wipe"], true, 1),
+      packageOf("premium", "Premium Auto Care", 165000, "2 jam", "Perawatan kendaraan lebih premium.", ["Semua Fresh", "Wax ringan", "Semir ban", "Detail kaca"], false, 1),
+    ],
+    addOns: [
+      addonOf("wax-car", "Wax ringan", 45000, "+30 mnt"),
+      addonOf("vacuum-car", "Vacuum interior", 30000, "+25 mnt"),
+      addonOf("tire-polish", "Semir ban", 15000, "+10 mnt"),
+    ],
+  }),
+  make({
+    id: "bike-wash",
+    name: "Motor Care",
+    shortName: "Motor Care",
+    styleKey: "motor",
+    startingPrice: 30000,
+    duration: "45–90 mnt",
+    tagline: "Motor bersih tanpa antre",
+    category: "Auto Care",
+    pricingUnit: "per_vehicle",
+    quantityRule: quantityRules.motor,
+    workerRule: { min: 1, recommended: 1, max: 2, allowManual: true },
+    description: "Layanan perawatan motor ringan di lokasi kamu, mulai dari pencucian bodi hingga perapian area kendaraan.",
+    packages: [
+      packageOf("basic", "Basic Motor Wash", 30000, "45 mnt", "Cuci motor exterior praktis di rumah.", ["Bodi motor", "Velg ringan", "Lap kering"], false, 1),
+      packageOf("fresh", "Fresh Motor Care", 50000, "60 mnt", "Motor lebih segar dengan detail ringan.", ["Semua Basic", "Area bawah ringan", "Semir ban"], true, 1),
+      packageOf("premium", "Premium Motor Care", 85000, "90 mnt", "Perawatan motor lebih detail.", ["Semua Fresh", "Wax bodi ringan", "Detail sela ringan", "Care helm 1 pcs"], false, 1),
+    ],
+    addOns: [
+      addonOf("helmet", "Care helm", 20000, "+20 mnt"),
+      addonOf("bike-wax", "Wax bodi motor", 25000, "+20 mnt"),
+      addonOf("chain-light", "Bersih rantai ringan", 20000, "+15 mnt"),
+    ],
+  }),
+  make({
+    id: "deep-clean",
+    name: "Deep Care",
+    shortName: "Deep Clean",
+    styleKey: "deepClean",
+    startingPrice: 225000,
+    duration: "4–6 jam",
+    tagline: "Care mendalam sampai sudut",
+    category: "Premium Care",
+    pricingUnit: "per_order",
+    quantityRule: quantityRules.premium,
+    workerRule: { min: 2, recommended: 2, max: 3, allowManual: true },
+    description: "Perawatan mendalam untuk rumah atau ruang yang membutuhkan penanganan detail, termasuk sudut dan noda yang jarang tersentuh.",
+    packages: [
+      packageOf("deep-basic", "Deep Basic", 225000, "4 jam", "Deep cleaning area prioritas.", ["Area utama", "Sudut tersembunyi", "Noda ringan-menengah"], false, 2),
+      packageOf("deep-plus", "Deep Plus", 375000, "5–6 jam", "Deep cleaning lebih menyeluruh.", ["Semua Deep Basic", "Dapur/kamar mandi prioritas", "Checklist hasil"], true, 2),
+      packageOf("deep-team", "Deep Team", 575000, "6–7 jam", "Tim untuk kebutuhan deep cleaning lebih besar.", ["Semua Deep Plus", "Tim 3 partner", "Pengecekan akhir"], false, 3),
+    ],
+    addOns: [
+      addonOf("sofa", "Care sofa ringan", 75000, "+60 mnt"),
+      addonOf("carpet", "Care karpet ringan", 65000, "+45 mnt"),
+      addonOf("disinfect", "Disinfeksi ringan", 50000, "+30 mnt"),
+    ],
+  }),
+  make({
+    id: "office",
+    name: "Office Care",
+    shortName: "Office Care",
+    styleKey: "office",
+    startingPrice: 275000,
+    duration: "4–6 jam",
+    tagline: "Ruang kerja nyaman dan terawat",
+    category: "Office Care",
+    pricingUnit: "per_m2",
+    quantityRule: quantityRules.office,
+    workerRule: { min: 2, recommended: 2, max: 4, allowManual: true },
+    description: "Layanan care untuk kantor, toko, studio, atau ruang usaha kecil agar tetap rapi, bersih, dan nyaman digunakan.",
+    packages: [
+      packageOf("office-basic", "Office Basic", 275000, "4 jam", "Perawatan ruang kerja kecil.", ["Area kerja", "Meja luar", "Sapu/pel", "Sampah ringan"], false, 2),
+      packageOf("office-fresh", "Office Fresh", 450000, "5 jam", "Kantor lebih segar untuk operasional harian.", ["Semua Office Basic", "Pantry ringan", "Ruang meeting", "Kaca ringan"], true, 2),
+      packageOf("office-deep", "Office Deep", 750000, "6–8 jam", "Perawatan kantor/toko lebih detail.", ["Semua Office Fresh", "Detail sudut", "Karpet ringan", "Tim 3 partner"], false, 3),
+    ],
+    addOns: [
+      addonOf("meeting-room", "Ruang meeting tambahan", 50000, "+35 mnt"),
+      addonOf("pantry", "Care pantry", 65000, "+45 mnt"),
+      addonOf("office-glass", "Kaca partisi ringan", 45000, "+30 mnt"),
+    ],
+  }),
+  make({
+    id: "premium",
+    name: "Premium Care",
+    shortName: "Premium",
+    styleKey: "premium",
+    startingPrice: 350000,
+    duration: "6–8 jam",
+    tagline: "Prioritas untuk kebutuhan spesial",
+    category: "Premium Care",
+    pricingUnit: "per_order",
+    quantityRule: quantityRules.premium,
+    workerRule: { min: 2, recommended: 3, max: 4, allowManual: true },
+    description: "Layanan prioritas untuk rumah besar, pindahan, setelah renovasi, event kecil, atau deep cleaning dengan tim berpengalaman.",
+    packages: [
+      packageOf("premium-home", "Premium Home", 350000, "5–6 jam", "Layanan prioritas untuk rumah kecil-menengah.", ["Tim minimal 2 partner", "Deep area prioritas", "Checklist hasil", "Jadwal prioritas"], false, 2),
+      packageOf("premium-plus", "Premium Plus", 675000, "6–8 jam", "Untuk rumah lebih besar atau kebutuhan deep cleaning lebih luas.", ["Semua Premium Home", "Tim 3 partner", "Dapur/kamar mandi prioritas", "Supervisor checklist"], true, 3),
+      packageOf("premium-estate", "Premium Estate", 1120000, "Sesuai kebutuhan", "Paket premium untuk scope besar dengan estimasi fleksibel.", ["Konsultasi scope", "Tim prioritas", "Area luas/custom", "Estimasi transparan", "Koordinasi sebelum pengerjaan"], false, 3),
+    ],
+    addOns: [
+      addonOf("premium-sofa", "Sofa/karpet ringan", 95000, "+60 mnt"),
+      addonOf("premium-disinfect", "Disinfeksi area", 75000, "+45 mnt"),
+      addonOf("priority-slot", "Prioritas slot jadwal", 50000, "Prioritas"),
+    ],
+  }),
+  make({
+    id: "custom",
+    name: "Custom Care",
+    shortName: "Custom",
+    styleKey: "custom",
+    startingPrice: 50000,
+    duration: "Sesuai kebutuhan",
+    tagline: "Care yang mengikuti kebutuhanmu",
+    category: "Custom Care",
+    pricingUnit: "quote",
+    customQuoteOnly: true,
+    quantityRule: quantityRules.custom,
+    workerRule: { min: 1, recommended: 1, max: 4, allowManual: false },
+    description: "Ceritakan kebutuhan khususmu. Tim Ride Home Care akan bantu menyusun scope, estimasi harga, dan jadwal yang paling sesuai.",
+    packages: [
+      packageOf("request", "Request Estimasi", 50000, "Estimasi awal", "Kirim request kebutuhan khusus untuk ditinjau tim.", ["Konsultasi kebutuhan", "Estimasi awal transparan", "Follow-up admin"], true, 1),
+      packageOf("survey", "Survey & Quote", 125000, "Sesuai jadwal", "Request survey/pengecekan sebelum layanan custom besar.", ["Survey kebutuhan", "Rekomendasi scope", "Estimasi final"], false, 1),
+    ],
+    addOns: [
+      addonOf("photo-review", "Review foto kebutuhan", 0, "Gratis"),
+      addonOf("admin-followup", "Follow-up admin prioritas", 25000, "Prioritas"),
+    ],
+  }),
 ];
 
 export const getService = (id: string) => services.find((service) => service.id === id) ?? services[0];
