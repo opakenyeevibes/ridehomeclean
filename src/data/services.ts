@@ -1,12 +1,13 @@
-import type { AddOn, Package, QuantityRule, Service, WorkerRule } from "@/types";
+import type { AddOn, CrewRule, Package, QuantityRule, Service, WorkerRule } from "@/types";
 import { categoryStyles, type CategoryStyleKey } from "@/lib/categoryStyles";
 
-type ServiceConfig = Pick<Service, "id" | "name" | "shortName" | "startingPrice" | "duration" | "tagline" | "category" | "description" | "pricingUnit" | "customQuoteOnly"> & {
+type ServiceConfig = Pick<Service, "id" | "name" | "shortName" | "startingPrice" | "duration" | "tagline" | "category" | "description" | "pricingUnit" | "customQuoteOnly" | "active" | "deprecated"> & {
   styleKey: CategoryStyleKey;
   packages: Package[];
   addOns: AddOn[];
   quantityRule: QuantityRule;
   workerRule: WorkerRule;
+  crewRule: CrewRule;
 };
 
 const packageOf = (id: string, name: string, price: number, duration: string, description: string, features: string[], popular = false, recommendedWorkers?: number): Package => ({
@@ -20,7 +21,24 @@ const packageOf = (id: string, name: string, price: number, duration: string, de
   recommendedWorkers,
 });
 
-const addonOf = (id: string, name: string, price: number, duration: string, packageIds?: string[]): AddOn => ({ id, name, price, duration, packageIds });
+const addonOf = (id: string, name: string, price: number, duration: string, options: Partial<Pick<AddOn, "packageIds" | "priceUnit" | "estimatedMinutes" | "additionalWorkerRequirement" | "active">> = {}): AddOn => ({
+  id,
+  name,
+  price,
+  duration,
+  priceUnit: options.priceUnit ?? "per_order",
+  estimatedMinutes: options.estimatedMinutes,
+  additionalWorkerRequirement: options.additionalWorkerRequirement ?? 0,
+  packageIds: options.packageIds,
+  active: options.active ?? true,
+});
+
+const crewRules = {
+  light: { baseCapacity: 3, additionalCrewFee: 50000, reason: "Pekerjaan ringan bisa dikerjakan satu partner untuk beberapa objek kecil." },
+  standard: { baseCapacity: 2, additionalCrewFee: 50000, reason: "Satu tim dasar menangani maksimal 2 objek/area dalam satu slot." },
+  team: { baseCapacity: 1, additionalCrewFee: 65000, reason: "Pekerjaan detail atau area besar membutuhkan tim agar durasi tetap realistis." },
+  quote: { baseCapacity: 1, additionalCrewFee: 0, reason: "Custom Care akan ditinjau admin sebelum jumlah tim dan harga final disetujui." },
+} satisfies Record<string, CrewRule>;
 
 const quantityRules = {
   home: { label: "Ukuran rumah", unit: "area", min: 1, max: 4, helper: "1 area = rumah kecil/kamar utama. Tambah area untuk rumah lebih besar." },
@@ -56,6 +74,7 @@ export const services: Service[] = [
     pricingUnit: "per_order",
     quantityRule: quantityRules.home,
     workerRule: { min: 1, recommended: 1, max: 3, allowManual: true },
+    crewRule: crewRules.standard,
     description: "Layanan bersih rumah panggilan dari Ride Home Care. Partner datang ke lokasi kamu untuk membantu rumah terasa lebih rapi, bersih, dan nyaman.",
     packages: [
       packageOf("basic", "Basic Care", 75000, "2 jam", "Perawatan ringan untuk area utama rumah.", ["Sapu & pel ringan", "Lap debu area utama", "Perapian dasar"], false, 1),
@@ -82,6 +101,7 @@ export const services: Service[] = [
     pricingUnit: "per_room",
     quantityRule: quantityRules.room,
     workerRule: { min: 1, recommended: 1, max: 2, allowManual: true },
+    crewRule: crewRules.light,
     description: "Perawatan kamar panggilan untuk membersihkan debu, merapikan area tidur, dan membuat kamar terasa lebih nyaman.",
     packages: [
       packageOf("basic", "Basic Room", 45000, "1 jam", "Perawatan ringan untuk satu kamar.", ["Sapu/pel area kamar", "Lap debu ringan", "Rapi tempat tidur"], false, 1),
@@ -106,6 +126,7 @@ export const services: Service[] = [
     pricingUnit: "per_bathroom",
     quantityRule: quantityRules.bathroom,
     workerRule: { min: 1, recommended: 1, max: 2, allowManual: true },
+    crewRule: crewRules.light,
     description: "Perawatan kamar mandi untuk membersihkan kerak ringan, lantai, dinding, dan area sanitasi agar kembali segar.",
     packages: [
       packageOf("basic", "Basic Bath", 55000, "1 jam", "Perawatan rutin kamar mandi.", ["Lantai & closet", "Wastafel", "Bilas area basah"], false, 1),
@@ -129,6 +150,7 @@ export const services: Service[] = [
     pricingUnit: "per_order",
     quantityRule: quantityRules.outdoor,
     workerRule: { min: 1, recommended: 2, max: 3, allowManual: true },
+    crewRule: crewRules.standard,
     description: "Layanan bersih area luar rumah seperti halaman, teras, taman kecil, dan area sekitar rumah.",
     packages: [
       packageOf("basic", "Basic Outdoor", 85000, "2 jam", "Rapikan area luar ringan.", ["Sapu halaman/teras", "Kumpulkan daun", "Buang sampah ringan"], false, 1),
@@ -152,6 +174,7 @@ export const services: Service[] = [
     pricingUnit: "per_vehicle",
     quantityRule: quantityRules.car,
     workerRule: { min: 1, recommended: 1, max: 2, allowManual: true },
+    crewRule: crewRules.standard,
     description: "Layanan perawatan kendaraan panggilan. Partner Ride Home Care datang ke lokasi untuk membersihkan mobil sesuai paket.",
     packages: [
       packageOf("basic", "Basic Car Wash", 65000, "60 mnt", "Cuci exterior mobil di lokasi.", ["Bodi exterior", "Velg ringan", "Lap kering"], false, 1),
@@ -176,6 +199,7 @@ export const services: Service[] = [
     pricingUnit: "per_vehicle",
     quantityRule: quantityRules.motor,
     workerRule: { min: 1, recommended: 1, max: 2, allowManual: true },
+    crewRule: crewRules.standard,
     description: "Layanan perawatan motor ringan di lokasi kamu, mulai dari pencucian bodi hingga perapian area kendaraan.",
     packages: [
       packageOf("basic", "Basic Motor Wash", 30000, "45 mnt", "Cuci motor exterior praktis di rumah.", ["Bodi motor", "Velg ringan", "Lap kering"], false, 1),
@@ -183,9 +207,9 @@ export const services: Service[] = [
       packageOf("premium", "Premium Motor Care", 85000, "90 mnt", "Perawatan motor lebih detail.", ["Semua Fresh", "Wax bodi ringan", "Detail sela ringan", "Care helm 1 pcs"], false, 1),
     ],
     addOns: [
-      addonOf("helmet", "Care helm", 20000, "+20 mnt"),
-      addonOf("bike-wax", "Wax bodi motor", 25000, "+20 mnt"),
-      addonOf("chain-light", "Bersih rantai ringan", 20000, "+15 mnt"),
+      addonOf("helmet", "Care helm", 20000, "+20 mnt", { estimatedMinutes: 20 }),
+      addonOf("bike-wax", "Wax bodi motor", 25000, "+20 mnt", { packageIds: ["fresh", "premium"], estimatedMinutes: 20 }),
+      addonOf("chain-light", "Bersih rantai ringan", 20000, "+15 mnt", { packageIds: ["premium"], estimatedMinutes: 15 }),
     ],
   }),
   make({
@@ -200,6 +224,7 @@ export const services: Service[] = [
     pricingUnit: "per_order",
     quantityRule: quantityRules.premium,
     workerRule: { min: 2, recommended: 2, max: 3, allowManual: true },
+    crewRule: crewRules.team,
     description: "Perawatan mendalam untuk rumah atau ruang yang membutuhkan penanganan detail, termasuk sudut dan noda yang jarang tersentuh.",
     packages: [
       packageOf("deep-basic", "Deep Basic", 225000, "4 jam", "Deep cleaning area prioritas.", ["Area utama", "Sudut tersembunyi", "Noda ringan-menengah"], false, 2),
@@ -224,6 +249,7 @@ export const services: Service[] = [
     pricingUnit: "per_m2",
     quantityRule: quantityRules.office,
     workerRule: { min: 2, recommended: 2, max: 4, allowManual: true },
+    crewRule: crewRules.team,
     description: "Layanan care untuk kantor, toko, studio, atau ruang usaha kecil agar tetap rapi, bersih, dan nyaman digunakan.",
     packages: [
       packageOf("office-basic", "Office Basic", 275000, "4 jam", "Perawatan ruang kerja kecil.", ["Area kerja", "Meja luar", "Sapu/pel", "Sampah ringan"], false, 2),
@@ -246,9 +272,12 @@ export const services: Service[] = [
     tagline: "Prioritas untuk kebutuhan spesial",
     category: "Premium Care",
     pricingUnit: "per_order",
+    active: false,
+    deprecated: true,
     quantityRule: quantityRules.premium,
     workerRule: { min: 2, recommended: 3, max: 4, allowManual: true },
-    description: "Layanan prioritas untuk rumah besar, pindahan, setelah renovasi, event kecil, atau deep cleaning dengan tim berpengalaman.",
+    crewRule: crewRules.team,
+    description: "Deprecated: Premium Care lama tidak tersedia untuk pemesanan baru. Gunakan paket Premium pada Home Care, Motor Care, Office Care, atau Deep Care.",
     packages: [
       packageOf("premium-home", "Premium Home", 350000, "5–6 jam", "Layanan prioritas untuk rumah kecil-menengah.", ["Tim minimal 2 partner", "Deep area prioritas", "Checklist hasil", "Jadwal prioritas"], false, 2),
       packageOf("premium-plus", "Premium Plus", 675000, "6–8 jam", "Untuk rumah lebih besar atau kebutuhan deep cleaning lebih luas.", ["Semua Premium Home", "Tim 3 partner", "Dapur/kamar mandi prioritas", "Supervisor checklist"], true, 3),
@@ -273,6 +302,7 @@ export const services: Service[] = [
     customQuoteOnly: true,
     quantityRule: quantityRules.custom,
     workerRule: { min: 1, recommended: 1, max: 4, allowManual: false },
+    crewRule: crewRules.quote,
     description: "Ceritakan kebutuhan khususmu. Tim Ride Home Care akan bantu menyusun scope, estimasi harga, dan jadwal yang paling sesuai.",
     packages: [
       packageOf("request", "Request Estimasi", 50000, "Estimasi awal", "Kirim request kebutuhan khusus untuk ditinjau tim.", ["Konsultasi kebutuhan", "Estimasi awal transparan", "Follow-up admin"], true, 1),

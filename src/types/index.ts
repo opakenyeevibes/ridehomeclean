@@ -2,10 +2,11 @@ import type { LucideIcon } from "lucide-react";
 
 export type PricingUnit = "per_order" | "per_room" | "per_bathroom" | "per_vehicle" | "per_m2" | "quote";
 export type WorkerRule = { min: number; recommended: number; max: number; allowManual?: boolean };
+export type CrewRule = { baseCapacity: number; additionalCrewFee: number; reason: string };
 export type QuantityRule = { label: string; unit: string; min: number; max: number; helper: string };
 export type Package = { id: string; name: string; price: number; duration: string; description: string; features: string[]; popular?: boolean; minWorkers?: number; recommendedWorkers?: number };
-export type AddOn = { id: string; name: string; price: number; duration: string; serviceIds?: string[]; packageIds?: string[] };
-export type Service = { id: string; name: string; shortName: string; category: string; description: string; tagline: string; rating: number; totalReviews: number; startingPrice: number; duration: string; color: string; accent: string; icon: LucideIcon; packages: Package[]; addOns: AddOn[]; active?: boolean; pricingUnit?: PricingUnit; quantityRule?: QuantityRule; workerRule?: WorkerRule; customQuoteOnly?: boolean };
+export type AddOn = { id: string; name: string; price: number; duration: string; serviceIds?: string[]; packageIds?: string[]; priceUnit?: PricingUnit; estimatedMinutes?: number; additionalWorkerRequirement?: number; active?: boolean };
+export type Service = { id: string; name: string; shortName: string; category: string; description: string; tagline: string; rating: number; totalReviews: number; startingPrice: number; duration: string; color: string; accent: string; icon: LucideIcon; packages: Package[]; addOns: AddOn[]; active?: boolean; deprecated?: boolean; pricingUnit?: PricingUnit; quantityRule?: QuantityRule; workerRule?: WorkerRule; crewRule?: CrewRule; customQuoteOnly?: boolean };
 export type ManagedService = Omit<Service, "icon" | "color" | "accent"> & { styleKey: string; sortOrder: number; active: boolean };
 export type UserRole = "customer" | "worker" | "admin";
 export type Address = { id: string; label: string; address: string; notes?: string; primary?: boolean };

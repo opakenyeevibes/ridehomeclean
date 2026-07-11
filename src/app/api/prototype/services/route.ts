@@ -21,10 +21,11 @@ function normalizeStore(items: ManagedService[]) {
   const normalized = items.map((item) => {
     const fallback = defaultById.get(item.id);
     seen.add(item.id);
-    if (!fallback || (item.quantityRule && item.workerRule && item.pricingUnit)) return item;
+    if (!fallback) return item;
+    if (item.quantityRule && item.workerRule && item.pricingUnit) return { ...item, active: fallback.deprecated ? false : item.active };
     return {
       ...fallback,
-      active: item.active ?? fallback.active,
+      active: fallback.deprecated ? false : item.active ?? fallback.active,
       sortOrder: item.sortOrder ?? fallback.sortOrder,
       styleKey: item.styleKey ?? fallback.styleKey,
     };
